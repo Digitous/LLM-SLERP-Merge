@@ -23,19 +23,15 @@ git clone https://github.com/Digitous/LLM-SLERP-Merge.git
 ```bash
 cd LLM-SLERP-Merge
 ```
-3. Run the SLERP script.
-```bash
-python slerpmergelm.py
-```
-## Install Necessary Dependencies
-
-If you encounter any package-related errors, ensure you have all the necessary dependencies (numpy, torch, transformers, tkinter, and colorama are used) you can install them using:
-
+3. (Optional) Ensure you have the proper dependencies: numpy, torch, transformers, tkinter, and colorama; you can install them using:
 ```bash
 pip install -r requirements.txt
 ```
-
-4. Follow the on-screen prompts to select the primary model, secondary model, and the directory to save the blended model. Ensure parent models are of the same architecture and parameter size (for example both LLaMa2 13B pretrained language models). The script will do the rest, spherical merging both parent models and saving the offspring model to the selected save directory. For added convenience, it will also scan both parent directories to see if one has a special_tokens_map.json and will proceed to copy all relevant tokenizer files from there to the child directory (in case both or neither contains the special_tokens_map, it will still copy necessary files to the child dir).
+4. Run the SLERP script.
+```bash
+python slerpmergelm.py
+```
+5. Follow the on-screen prompts to select the primary model, secondary model, and the directory to save the blended model. Ensure parent models are of the same architecture and parameter size (for example both LLaMa2 13B pretrained language models). The script will do the rest, spherical merging both parent models and saving the offspring model to the selected save directory. For added convenience, it will also scan both parent directories to see if one has a special_tokens_map.json and will proceed to copy all relevant tokenizer files from there to the child directory (in case both or neither contains the special_tokens_map, it will still copy necessary files to the child dir).
 
 ---
 
