@@ -37,8 +37,8 @@ This project is unlicensed and unrestricted on how far it's proliferated, update
 
 ---
 
-**Contributors**: [Digitous](https://github.com/Digitous) [CalderaAI](https://huggingface.co/CalderaAI)
+**Contributors**: [Digitous](https://github.com/Digitous) & [CalderaAI](https://huggingface.co/CalderaAI) For retrofitting SLERP script for LLM (Pytorch+HF format) merging.
 
-**Original Script** [dvschultz](https://gist.github.com/dvschultz/3af50c40df002da3b751efab1daddf2c)
+**Original Script** [dvschultz](https://gist.github.com/dvschultz/3af50c40df002da3b751efab1daddf2c) For giving insights on how to go about Spherical Linear Interpolation with their script.
 
 **Special Mention** [LostRuins](https://github.com/LostRuins) For first weight averaging script for LLMs (that we know of; without their work, none of this would have come to fruition).
