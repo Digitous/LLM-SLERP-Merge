@@ -17,15 +17,15 @@ Traditionally, model merging often resorts to weight averaging which, although s
 
 1. Clone this repository.
 ```bash
-git clone https://github.com/yourusername/slerp-model-merging.git
+git clone https://github.com/Digitous/LLM-SLERP-Merge.git
 ```
 2. Navigate to the cloned directory.
 ```bash
-cd slerp-model-merging
+cd LLM-SLERP-Merge
 ```
 3. Run the SLERP script.
 ```bash
-python slerp_script.py
+python slerpmergelm.py
 ```
 4. Follow the on-screen prompts to select the primary model, secondary model, and the directory to save the blended model. Ensure parent models are of the same architecture and parameter size (for example both LLaMa2 13B pretrained language models). The script will do the rest, spherical merging both parent models and saving the offspring model to the selected save directory. For added convenience, it will also scan both parent directories to see if one has a special_tokens_map.json and will proceed to copy all relevant tokenizer files from there to the child directory (in case both or neither contains the special_tokens_map, it will still copy necessary files to the child dir).
 
@@ -33,9 +33,10 @@ python slerp_script.py
 
 ## License
 
-This project is unlicensed and I don't care how far it's proliferated, updated, modified, maintined, integrated, and shared around. A kind reference to this repo as well as dvschultz's script (which inspired this work) at https://gist.github.com/dvschultz/3af50c40df002da3b751efab1daddf2c would be nice.
+This project is unlicensed and unrestricted on how far it's proliferated, updated, modified, maintined, integrated, and shared around. A kind reference to this repo as well as dvschultz's script (which inspired this work) at https://gist.github.com/dvschultz/3af50c40df002da3b751efab1daddf2c would be nice.
 
 ---
 
 **Contributors**: [Digitous](https://github.com/Digitous) [CalderaAI](https://huggingface.co/CalderaAI)
 **Original Script** [dvschultz](https://gist.github.com/dvschultz/3af50c40df002da3b751efab1daddf2c)
+**Special Mention** [LostRuins](https://github.com/LostRuins) For first weight averaging script for LLMs (that we know of; without their work, none of this would have come to fruition).
