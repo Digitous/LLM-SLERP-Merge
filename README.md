@@ -1,5 +1,5 @@
 # LLM-SLERP-Merge
-Spherical Merge HuggingFace Pytorch format Language Models with minimal feature loss.
+Spherical Merge HuggingFace-Pytorch format Language Models with minimal feature loss.
 
 # Spherical Linear Interpolation (SLERP) Model Merging
 
