@@ -37,7 +37,7 @@ python slerpmergelm.py
 
 ## Current Limitation
 
-Some models, even of the same architecture and parameter size, may have a different vocab_size as defined in their config.json. For instance, LLaMa v1 and v2 13B have a standardized vocab of 32000. Some pretrained models may deviate from this standard with a modified vocab of 32001 or 32032 and so on, making them incompatible for merge. There are ways to bypass this limitation and it will be addressed in the next update.
+Some models, even of the same architecture and parameter size, may have a different vocab_size as defined in their config.json. For instance, LLaMa v1 and v2 13B have a standardized vocab of 32000 however, some pretrained LLaMa 13B models may deviate from this standard with a modified vocab of 32001 or 32032 and so on, making them incompatible for merge. There are ways to bypass this limitation and it will be addressed in the next update.
 
 ---
 
