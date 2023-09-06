@@ -13,7 +13,6 @@ from transformers import AutoModelForCausalLM, AutoConfig
 import subprocess
 import os
 import shutil
-import json
 import tkinter as tk
 from tkinter import filedialog
 from colorama import init, Fore, Style
@@ -32,15 +31,7 @@ def lerp(t, v0, v1):
     return (1 - t) * v0 + t * v1
 
 def slerp(t, v0, v1, DOT_THRESHOLD=0.9995):
-    '''
-    Spherical linear interpolation (batched)
-    Args:
-        t (float/np.ndarray): Float value between 0.0 and 1.0
-        v0 (torch.Tensor): Starting tensor
-        v1 (torch.Tensor): Final tensor
-    Returns:
-        v2 (torch.Tensor): Interpolation tensor between v0 and v1
-    '''
+    epsilon = 1e-10
 
     # Convert tensors to a common format, float32
     v0 = v0.to(dtype=torch.float32)
@@ -48,20 +39,31 @@ def slerp(t, v0, v1, DOT_THRESHOLD=0.9995):
 
     # Convert tensors to numpy arrays
     c = False
-    if not isinstance(v0,np.ndarray):
+    if not isinstance(v0, np.ndarray):
         c = True
         v0 = v0.detach().cpu().numpy()
-    if not isinstance(v1,np.ndarray):
+    if not isinstance(v1, np.ndarray):
         c = True
         v1 = v1.detach().cpu().numpy()
 
     # Copy the vectors to reuse them later
     v0_copy = np.copy(v0)
     v1_copy = np.copy(v1)
+
     # Normalize the vectors to get the directions and angles    
-    v0 = v0 / np.linalg.norm(v0)
-    v1 = v1 / np.linalg.norm(v1)
-    
+    norm_v0 = np.linalg.norm(v0)
+    norm_v1 = np.linalg.norm(v1)
+
+    if norm_v0 > epsilon:
+        v0 = v0 / norm_v0
+    else:
+        print(f"Warning: Norm of v0 is very small ({norm_v0}). Skipping normalization.")
+
+    if norm_v1 > epsilon:
+        v1 = v1 / norm_v1
+    else:
+        print(f"Warning: Norm of v1 is very small ({norm_v1}). Skipping normalization.")
+
     # Dot product with the normalized vectors (can't use np.dot in W)
     dot = np.sum(v0 * v1)
     # If absolute value of dot product is almost 1, vectors are ~colineal, so use lerp
@@ -78,11 +80,11 @@ def slerp(t, v0, v1, DOT_THRESHOLD=0.9995):
     s1 = sin_theta_t / sin_theta_0
     v2 = s0 * v0_copy + s1 * v1_copy
 
-    del v0_copy,v1_copy
+    del v0_copy, v1_copy
     del v1
 
     if c:
-        res = torch.from_numpy(v2) #.to("cuda")
+        res = torch.from_numpy(v2)
     else:
         res = v2
     return res
@@ -111,12 +113,54 @@ def load_model(path):
 def save_model(model, path):
     torch.save(model, path)
 
+# Check and pad vocabularies if necessary using state dictionaries
+def pad_state_dicts_with_different_tensors(primary_state_dict, secondary_state_dict):
+    with torch.no_grad(): 
+        # Get common keys
+        common_keys = set(primary_state_dict.keys()).intersection(set(secondary_state_dict.keys()))
+        
+        for key in common_keys:
+            tensor1 = primary_state_dict[key]
+            tensor2 = secondary_state_dict[key]
+            
+            if tensor1.size() != tensor2.size():
+                if tensor1.size(0) < tensor2.size(0):
+                    # Pad the first tensor to match the size of the second tensor
+                    padding_size = tensor2.size(0) - tensor1.size(0)
+                    padding = torch.zeros((padding_size,) + tensor1.size()[1:], device=tensor1.device, dtype=tensor1.dtype)
+                    primary_state_dict[key] = torch.cat([tensor1, padding], dim=0)
+                elif tensor1.size(0) > tensor2.size(0):
+                    # Pad the second tensor to match the size of the first tensor
+                    padding_size = tensor1.size(0) - tensor2.size(0)
+                    padding = torch.zeros((padding_size,) + tensor2.size()[1:], device=tensor2.device, dtype=tensor2.dtype)
+                    secondary_state_dict[key] = torch.cat([tensor2, padding], dim=0)
+
+        # For keys that are not common, add the missing parameters from one model to the other with appropriate zero padding
+        for key in primary_state_dict:
+            if key not in secondary_state_dict:
+                tensor = primary_state_dict[key]
+                padding = torch.zeros_like(tensor)
+                secondary_state_dict[key] = padding
+
+        for key in secondary_state_dict:
+            if key not in primary_state_dict:
+                tensor = secondary_state_dict[key]
+                padding = torch.zeros_like(tensor)
+                primary_state_dict[key] = padding
+
+        # Ensure vocab sizes match in both models
+        primary_vocab_size = primary_state_dict['model.embed_tokens.weight'].size(0)
+        secondary_vocab_size = secondary_state_dict['model.embed_tokens.weight'].size(0)
+        assert primary_vocab_size == secondary_vocab_size, "Vocab sizes do not match even after padding!"
+
 primary_model_path = select_path("Select the first model")
 secondary_model_path = select_path("Select the second model")
 blended_model_savedir = select_path("Select the directory to save the blended model")
 
 primary_model = load_model(primary_model_path)
 secondary_model = load_model(secondary_model_path)
+# Call the function to pad state dictionaries as needed
+pad_state_dicts_with_different_tensors(primary_model['state_dict'], secondary_model['state_dict'])
 
 v0 = primary_model['state_dict']
 v1 = secondary_model['state_dict']
@@ -141,7 +185,15 @@ for key, value in v0.items():
     if isinstance(value, np.ndarray):
         v0[key] = torch.tensor(value)
 
-model = AutoModelForCausalLM.from_config(AutoConfig.from_pretrained(primary_model_path))
+resulting_vocab_size = primary_model['state_dict']['model.embed_tokens.weight'].size(0)
+
+config = AutoConfig.from_pretrained(primary_model_path)
+if config.vocab_size != resulting_vocab_size:
+    print(f"Updating config vocab size from {config.vocab_size} to {resulting_vocab_size}")
+    config.vocab_size = resulting_vocab_size
+
+model = AutoModelForCausalLM.from_config(config)
+
 model.load_state_dict(primary_model['state_dict'])
 model.save_pretrained(blended_model_savedir, max_shard_size="20000MiB")
 
