@@ -35,9 +35,9 @@ python slerpmergelm.py
 
 ---
 
-## Current Limitation
+## Convenience Feature
 
-Some models, even of the same architecture and parameter size, may have a different vocab_size as defined in their config.json. For instance, LLaMa v1 and v2 13B have a standardized vocab of 32000 however, some pretrained LLaMa 13B models may deviate from this standard with a modified vocab of 32001 or 32032 and so on, making them incompatible for merge. There are ways to bypass this limitation and it will be addressed in the next update.
+Some models, even of the same architecture and parameter size, may have a different vocab_size as defined in their config.json. For instance, LLaMa v1 and v2 13B have a standardized vocab of 32000 however, some pretrained LLaMa 13B models may deviate from this standard with a modified vocab of 32001 or 32032 and so on, which makes them incompatible for merging. We have added automatic model shape mismatch and vocab mismatch handling. User selected model pairs will be analyzed prior to merge. If there is a shape or vocab mismatch this script detects which model is short in vocab or shape, and an embedding is injected with empty tensors - compensating for disparities. The script will not continue to merge until it has ensured both models in memory are in complete shape and vocab parity. During the merge process, tensors beyond Epsilon = 1e-10 will be skipped, mitigating the potential of dividing by zero with the added tensors. When the merge is completed, the script ensures the vocab size in the config.json of the child model is correct. 
 
 ---
 
