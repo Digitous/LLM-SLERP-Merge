@@ -1,7 +1,9 @@
 # LLM-SLERP-Merge
 Spherical Merge HuggingFace-Pytorch format Language Models for minimal feature loss of parent models.
 
-```
+# -----------------------------------------------------------------------
+Temporary notice, skip below this to read what this repo accomplishes.
+
 10 September 2023 - Important Update is on the way, I am sharing this note at the top here as it's as much a hotfix as it is
 a feature. While I can't directly guarantee what was added last upload as a 'quality of life' feature that if it does its job
 properly no one would notice it. Finetuned models with an extended vocabulary result in models that can't be merged with anything unless the merge script has logic to handle these events built in. I've seen the straightforward approach to truncate some of the busier model's tensors when loaded in memory right before merge ops and that's a brutal sacrifice. The last update was the first one to handle mismatched model sizes of the same pretrained family/B param size so the end user isn't suckerpunched by this very annoying issue, leaving them not much to go off of, wondering if a merge will or will not be possible with any given combination of models.
@@ -15,7 +17,7 @@ The Hotfix: is in the lab, we're not backing down addressing disparate model sha
 I also owe it to llms for all the reckless brain surgery experiments I've done on them so there's that.
 Enough writing an explainer book - I'll get the hotfix out soon. Send me hopes and dreams for support.
 
-```
+# -----------------------------------------------------------------------
 
 # Spherical Linear Interpolation (SLERP) Model Merging
 
