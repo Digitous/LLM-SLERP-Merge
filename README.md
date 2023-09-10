@@ -1,6 +1,22 @@
 # LLM-SLERP-Merge
 Spherical Merge HuggingFace-Pytorch format Language Models for minimal feature loss of parent models.
 
+```
+10 September 2023 - Important Update is on the way, I am sharing this note at the top here as it's as much a hotfix as it is
+a feature. While I can't directly guarantee what was added last upload as a 'quality of life' feature that if it does its job
+properly no one would notice it. Finetuned models with an extended vocabulary result in models that can't be merged with anything unless the merge script has logic to handle these events built in. I've seen the straightforward approach to truncate some of the busier model's tensors when loaded in memory right before merge ops and that's a brutal sacrifice. The last update was the first one to handle mismatched model sizes of the same pretrained family/B param size so the end user isn't suckerpunched by this very annoying issue, leaving them not much to go off of, wondering if a merge will or will not be possible with any given combination of models.
+
+This is where mistakes were made. I pursued an additive approach that extends the smaller model in memory and when the parent models are merged, the vocab deposited in the child model's folder is double checked by the script and appended if needed.
+
+But what's the issue? The extension method relied on adding tensors filled with zeroes. It made the merge script happy and the resulting model performs fine. We did have a basic function to check VS a deep Epsilon that told the operation to phone it in when it spotted tensors that were basically zeroes to the extend of what modern processors can handle. So the results were great, unless further merging from there occurs or the inference system does math a certain way or if the merge just sucked in the first place, making then math a lopsided catastrophe, resulting in a sideshow of shit haunted by NaN and inf values in your favorite LLM handler. All this for a convenience feature aiming to be completely invisible while preserving the most information.
+
+The Hotfix: is in the lab, we're not backing down addressing disparate model shapes by extending the meek and the shy. We die on that hill, with shame if we have to. This time an elegant approach that extrapolates a meaningful representation of that model's data by taking the edge of two tensors and spacing them across as many tensors required to meet model parity - each extension tensor between them will be a gradient between their values. It's not perfect but we're not burning perfectly good information on a bigger model even if the hard way has to be done. Is this approach a little extra, and a reversion of a simple path? Well yes, and it's better.
+
+I also owe it to llms for all the reckless brain surgery experiments I've done on them so there's that.
+Enough writing an explainer book - I'll get the hotfix out soon. Send me hopes and dreams for support.
+
+```
+
 # Spherical Linear Interpolation (SLERP) Model Merging
 
 Traditionally, model merging often resorts to weight averaging which, although straightforward, might not always capture the intricate features of the models being merged. The SLERP technique in this script addresses this limitation, producing a blended model with characteristics smoothly interpolated from both parent models, ensuring the resultant model captures the essence of both its parents.
